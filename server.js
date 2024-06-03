@@ -40,6 +40,35 @@ app.post('/api/notes', async (req, res) => {
     res.status(500).json({ message: "Error adding note" });
   }
 });
+
+app.delete('/api/notes/:id', async (req, res) => {
+  try {
+    const notes = await readFromFile('./db/db.json');
+    const notesArray = JSON.parse(notes);
+
+    // Find the index of the note with the given id
+    const noteIndex = notesArray.findIndex(note => note.id === req.params.id);
+
+    // If the note is not found, return 404
+    if (noteIndex === -1) {
+      res.status(404).json({ message: 'Note not found' });
+      return;
+    }
+
+    // Remove the note from the array
+    notesArray.splice(noteIndex, 1);
+
+    // Write the updated array back to the file
+    await writeToFile('./db/db.json', JSON.stringify(notesArray));
+
+    res.status(204).send();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error deleting note" });
+  }
+});
+
+
 // Note Reader for the notes.html file
 app.get('/api/notes', async (req, res) => {
   try {
